@@ -1,10 +1,10 @@
-//nolint
+// nolint
 package keeper
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/irisnet/irismod/modules/coinswap/types"
+	"github.com/bharvest/coinswap/modules/coinswap/types"
 )
 
 // DeductPoolCreationFee performs fee handling for creating liquidity pool

@@ -40,8 +40,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-
-	htlctypes "github.com/irisnet/irismod/modules/htlc/types"
 )
 
 // DefaultConsensusParams defines the default Tendermint consensus params used in
@@ -92,28 +90,6 @@ func Setup(isCheckTx bool) *SimApp {
 			},
 		)
 	}
-
-	return app
-}
-
-func SetupWithGenesisHTLC(htlcGenesis *htlctypes.GenesisState) *SimApp {
-	app, genesisState := setup(true, 5)
-	genesisState[htlctypes.ModuleName] = app.AppCodec().MustMarshalJSON(htlcGenesis)
-
-	// init chain must be called to stop deliverState from being nil
-	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
-	if err != nil {
-		panic(err)
-	}
-
-	// Initialize the chain
-	app.InitChain(
-		abci.RequestInitChain{
-			Validators:      []abci.ValidatorUpdate{},
-			ConsensusParams: DefaultConsensusParams,
-			AppStateBytes:   stateBytes,
-		},
-	)
 
 	return app
 }

@@ -16,7 +16,6 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
-	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
@@ -40,6 +39,7 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -91,33 +91,9 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/modules/core/keeper"
 	ibcmock "github.com/cosmos/ibc-go/testing/mock"
 
-	"github.com/irisnet/irismod/modules/coinswap"
-	coinswapkeeper "github.com/irisnet/irismod/modules/coinswap/keeper"
-	coinswaptypes "github.com/irisnet/irismod/modules/coinswap/types"
-	"github.com/irisnet/irismod/modules/farm"
-	farmkeeper "github.com/irisnet/irismod/modules/farm/keeper"
-	farmtypes "github.com/irisnet/irismod/modules/farm/types"
-	"github.com/irisnet/irismod/modules/htlc"
-	htlckeeper "github.com/irisnet/irismod/modules/htlc/keeper"
-	htlctypes "github.com/irisnet/irismod/modules/htlc/types"
-	"github.com/irisnet/irismod/modules/nft"
-	nftkeeper "github.com/irisnet/irismod/modules/nft/keeper"
-	nfttypes "github.com/irisnet/irismod/modules/nft/types"
-	"github.com/irisnet/irismod/modules/oracle"
-	oracleKeeper "github.com/irisnet/irismod/modules/oracle/keeper"
-	oracletypes "github.com/irisnet/irismod/modules/oracle/types"
-	"github.com/irisnet/irismod/modules/random"
-	randomkeeper "github.com/irisnet/irismod/modules/random/keeper"
-	randomtypes "github.com/irisnet/irismod/modules/random/types"
-	"github.com/irisnet/irismod/modules/record"
-	recordkeeper "github.com/irisnet/irismod/modules/record/keeper"
-	recordtypes "github.com/irisnet/irismod/modules/record/types"
-	"github.com/irisnet/irismod/modules/service"
-	servicekeeper "github.com/irisnet/irismod/modules/service/keeper"
-	servicetypes "github.com/irisnet/irismod/modules/service/types"
-	"github.com/irisnet/irismod/modules/token"
-	tokenkeeper "github.com/irisnet/irismod/modules/token/keeper"
-	tokentypes "github.com/irisnet/irismod/modules/token/types"
+	"github.com/bharvest/coinswap/modules/coinswap"
+	coinswapkeeper "github.com/bharvest/coinswap/modules/coinswap/keeper"
+	coinswaptypes "github.com/bharvest/coinswap/modules/coinswap/types"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"
@@ -156,15 +132,7 @@ var (
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 
-		token.AppModuleBasic{},
-		record.AppModuleBasic{},
-		nft.AppModuleBasic{},
-		htlc.AppModuleBasic{},
 		coinswap.AppModuleBasic{},
-		service.AppModuleBasic{},
-		oracle.AppModuleBasic{},
-		random.AppModuleBasic{},
-		farm.AppModuleBasic{},
 	)
 
 	// module account permissions
@@ -176,15 +144,7 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
-		tokentypes.ModuleName:          {authtypes.Minter, authtypes.Burner},
-		htlctypes.ModuleName:           {authtypes.Minter, authtypes.Burner},
 		coinswaptypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
-		servicetypes.DepositAccName:    {authtypes.Burner},
-		servicetypes.RequestAccName:    nil,
-		servicetypes.FeeCollectorName:  {authtypes.Burner},
-		farmtypes.ModuleName:           {authtypes.Burner},
-		farmtypes.RewardCollector:      nil,
-		farmtypes.EscrowCollector:      nil,
 	}
 )
 
@@ -231,15 +191,7 @@ type SimApp struct {
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 	ScopedIBCMockKeeper  capabilitykeeper.ScopedKeeper
 
-	TokenKeeper    tokenkeeper.Keeper
-	RecordKeeper   recordkeeper.Keeper
-	NFTKeeper      nftkeeper.Keeper
-	HTLCKeeper     htlckeeper.Keeper
 	CoinswapKeeper coinswapkeeper.Keeper
-	ServiceKeeper  servicekeeper.Keeper
-	OracleKeeper   oracleKeeper.Keeper
-	RandomKeeper   randomkeeper.Keeper
-	FarmKeeper     farmkeeper.Keeper
 
 	// the module manager
 	mm *module.Manager
@@ -282,10 +234,7 @@ func NewSimApp(
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey,
 		upgradetypes.StoreKey, feegrant.StoreKey, evidencetypes.StoreKey,
-		ibctransfertypes.StoreKey, capabilitytypes.StoreKey, tokentypes.StoreKey,
-		nfttypes.StoreKey, htlctypes.StoreKey, recordtypes.StoreKey,
-		coinswaptypes.StoreKey, servicetypes.StoreKey, oracletypes.StoreKey,
-		randomtypes.StoreKey, farmtypes.StoreKey,
+		ibctransfertypes.StoreKey, capabilitytypes.StoreKey, coinswaptypes.StoreKey,
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -377,27 +326,6 @@ func NewSimApp(
 	// If evidence needs to be handled for the app, set routes in router here and seal
 	app.EvidenceKeeper = *evidenceKeeper
 
-	app.TokenKeeper = tokenkeeper.NewKeeper(
-		appCodec,
-		keys[tokentypes.StoreKey],
-		app.GetSubspace(tokentypes.ModuleName),
-		app.BankKeeper,
-		app.ModuleAccountAddrs(),
-		authtypes.FeeCollectorName,
-	)
-	app.RecordKeeper = recordkeeper.NewKeeper(appCodec, keys[recordtypes.StoreKey])
-
-	app.NFTKeeper = nftkeeper.NewKeeper(appCodec, keys[nfttypes.StoreKey])
-
-	app.HTLCKeeper = htlckeeper.NewKeeper(
-		appCodec,
-		keys[htlctypes.StoreKey],
-		app.GetSubspace(htlctypes.ModuleName),
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.ModuleAccountAddrs(),
-	)
-
 	app.CoinswapKeeper = coinswapkeeper.NewKeeper(
 		appCodec,
 		keys[coinswaptypes.StoreKey],
@@ -408,49 +336,17 @@ func NewSimApp(
 		authtypes.FeeCollectorName,
 	)
 
-	app.ServiceKeeper = servicekeeper.NewKeeper(
-		appCodec,
-		keys[servicetypes.StoreKey],
-		app.AccountKeeper,
-		app.BankKeeper,
-		app.GetSubspace(servicetypes.ModuleName),
-		app.ModuleAccountAddrs(),
-		servicetypes.FeeCollectorName,
-	)
-
-	app.OracleKeeper = oracleKeeper.NewKeeper(
-		appCodec, keys[oracletypes.StoreKey], app.GetSubspace(oracletypes.ModuleName),
-		app.ServiceKeeper,
-	)
-
-	app.FarmKeeper = farmkeeper.NewKeeper(appCodec,
-		keys[farmtypes.StoreKey],
-		app.BankKeeper,
-		app.AccountKeeper,
-		app.DistrKeeper,
-		&app.GovKeeper,
-		func(ctx sdk.Context, lpTokenDenom string) error { return nil },
-		app.GetSubspace(farmtypes.ModuleName),
-		authtypes.FeeCollectorName,
-		distrtypes.ModuleName,
-	)
-
 	// register the proposal types
 	govRouter := govtypes.NewRouter()
 	govRouter.AddRoute(govtypes.RouterKey, govtypes.ProposalHandler).
 		AddRoute(paramproposal.RouterKey, params.NewParamChangeProposalHandler(app.ParamsKeeper)).
 		AddRoute(distrtypes.RouterKey, distr.NewCommunityPoolSpendProposalHandler(app.DistrKeeper)).
-		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper)).
-		AddRoute(farmtypes.RouterKey, farm.NewCommunityPoolCreateFarmProposalHandler(app.FarmKeeper))
+		AddRoute(upgradetypes.RouterKey, upgrade.NewSoftwareUpgradeProposalHandler(app.UpgradeKeeper))
 
-	govHooks := govtypes.NewMultiGovHooks(farmkeeper.NewGovHook(app.FarmKeeper))
 	app.GovKeeper = govkeeper.NewKeeper(
 		appCodec, keys[govtypes.StoreKey], app.GetSubspace(govtypes.ModuleName), app.AccountKeeper, app.BankKeeper,
 		&stakingKeeper, govRouter,
 	)
-	app.GovKeeper.SetHooks(govHooks)
-
-	app.RandomKeeper = randomkeeper.NewKeeper(appCodec, keys[randomtypes.StoreKey], app.BankKeeper, app.ServiceKeeper)
 
 	/****  Module Options ****/
 
@@ -481,15 +377,7 @@ func NewSimApp(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
-		token.NewAppModule(appCodec, app.TokenKeeper, app.AccountKeeper, app.BankKeeper),
-		record.NewAppModule(appCodec, app.RecordKeeper, app.AccountKeeper, app.BankKeeper),
-		nft.NewAppModule(appCodec, app.NFTKeeper, app.AccountKeeper, app.BankKeeper),
-		htlc.NewAppModule(appCodec, app.HTLCKeeper, app.AccountKeeper, app.BankKeeper),
 		coinswap.NewAppModule(appCodec, app.CoinswapKeeper, app.AccountKeeper, app.BankKeeper),
-		service.NewAppModule(appCodec, app.ServiceKeeper, app.AccountKeeper, app.BankKeeper),
-		oracle.NewAppModule(appCodec, app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
-		random.NewAppModule(appCodec, app.RandomKeeper, app.AccountKeeper, app.BankKeeper),
-		farm.NewAppModule(appCodec, app.FarmKeeper, app.AccountKeeper, app.BankKeeper),
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -502,10 +390,8 @@ func NewSimApp(
 		govtypes.ModuleName, minttypes.ModuleName, crisistypes.ModuleName,
 		genutiltypes.ModuleName, evidencetypes.ModuleName, feegrant.ModuleName,
 		paramstypes.ModuleName, upgradetypes.ModuleName, vestingtypes.ModuleName,
-		ibchost.ModuleName, ibctransfertypes.ModuleName, tokentypes.ModuleName,
-		nfttypes.ModuleName, htlctypes.ModuleName, recordtypes.ModuleName,
-		coinswaptypes.ModuleName, servicetypes.ModuleName, oracletypes.ModuleName,
-		randomtypes.ModuleName, farmtypes.ModuleName, feegrant.ModuleName,
+		ibchost.ModuleName, ibctransfertypes.ModuleName, coinswaptypes.ModuleName,
+		feegrant.ModuleName,
 	)
 	app.mm.SetOrderEndBlockers(
 		capabilitytypes.ModuleName, authtypes.ModuleName, banktypes.ModuleName,
@@ -513,10 +399,8 @@ func NewSimApp(
 		govtypes.ModuleName, minttypes.ModuleName, crisistypes.ModuleName,
 		genutiltypes.ModuleName, evidencetypes.ModuleName, feegrant.ModuleName,
 		paramstypes.ModuleName, upgradetypes.ModuleName, vestingtypes.ModuleName,
-		ibchost.ModuleName, ibctransfertypes.ModuleName, tokentypes.ModuleName,
-		nfttypes.ModuleName, htlctypes.ModuleName, recordtypes.ModuleName,
-		coinswaptypes.ModuleName, servicetypes.ModuleName, oracletypes.ModuleName,
-		randomtypes.ModuleName, farmtypes.ModuleName, feegrant.ModuleName,
+		ibchost.ModuleName, ibctransfertypes.ModuleName, coinswaptypes.ModuleName,
+		feegrant.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -530,10 +414,8 @@ func NewSimApp(
 		govtypes.ModuleName, minttypes.ModuleName, crisistypes.ModuleName,
 		genutiltypes.ModuleName, evidencetypes.ModuleName, feegrant.ModuleName,
 		paramstypes.ModuleName, upgradetypes.ModuleName, vestingtypes.ModuleName,
-		ibchost.ModuleName, ibctransfertypes.ModuleName, tokentypes.ModuleName,
-		nfttypes.ModuleName, htlctypes.ModuleName, recordtypes.ModuleName,
-		coinswaptypes.ModuleName, servicetypes.ModuleName, oracletypes.ModuleName,
-		randomtypes.ModuleName, farmtypes.ModuleName, feegrant.ModuleName,
+		ibchost.ModuleName, ibctransfertypes.ModuleName, coinswaptypes.ModuleName,
+		feegrant.ModuleName,
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -556,15 +438,8 @@ func NewSimApp(
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
-		token.NewAppModule(appCodec, app.TokenKeeper, app.AccountKeeper, app.BankKeeper),
-		record.NewAppModule(appCodec, app.RecordKeeper, app.AccountKeeper, app.BankKeeper),
-		nft.NewAppModule(appCodec, app.NFTKeeper, app.AccountKeeper, app.BankKeeper),
-		htlc.NewAppModule(appCodec, app.HTLCKeeper, app.AccountKeeper, app.BankKeeper),
 		//coinswap.NewAppModule(appCodec, app.CoinswapKeeper, app.AccountKeeper, app.BankKeeper),
-		service.NewAppModule(appCodec, app.ServiceKeeper, app.AccountKeeper, app.BankKeeper),
-		oracle.NewAppModule(appCodec, app.OracleKeeper, app.AccountKeeper, app.BankKeeper),
-		random.NewAppModule(appCodec, app.RandomKeeper, app.AccountKeeper, app.BankKeeper),
-		farm.NewAppModule(appCodec, app.FarmKeeper, app.AccountKeeper, app.BankKeeper),
+
 	)
 
 	app.sm.RegisterStoreDecoders()
@@ -629,13 +504,7 @@ func (app *SimApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.
 	}
 
 	// add system service at InitChainer, overwrite if it exists
-	var serviceGenState servicetypes.GenesisState
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
-	app.appCodec.MustUnmarshalJSON(genesisState[servicetypes.ModuleName], &serviceGenState)
-	serviceGenState.Definitions = append(serviceGenState.Definitions, servicetypes.GenOraclePriceSvcDefinition())
-	serviceGenState.Bindings = append(serviceGenState.Bindings, servicetypes.GenOraclePriceSvcBinding(sdk.DefaultBondDenom))
-	serviceGenState.Definitions = append(serviceGenState.Definitions, randomtypes.GetSvcDefinition())
-	genesisState[servicetypes.ModuleName] = app.appCodec.MustMarshalJSON(&serviceGenState)
 
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
@@ -774,14 +643,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(slashingtypes.ModuleName)
 	paramsKeeper.Subspace(govtypes.ModuleName).WithKeyTable(govtypes.ParamKeyTable())
 	paramsKeeper.Subspace(crisistypes.ModuleName)
-	paramsKeeper.Subspace(tokentypes.ModuleName)
-	paramsKeeper.Subspace(recordtypes.ModuleName)
-	paramsKeeper.Subspace(htlctypes.ModuleName)
 	paramsKeeper.Subspace(coinswaptypes.ModuleName)
-	paramsKeeper.Subspace(servicetypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
-	paramsKeeper.Subspace(farmtypes.ModuleName)
-
 	return paramsKeeper
 }

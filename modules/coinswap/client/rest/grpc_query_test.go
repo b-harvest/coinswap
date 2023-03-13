@@ -21,10 +21,10 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	coinswaptypes "github.com/irisnet/irismod/modules/coinswap/types"
+	coinswaptypes "github.com/bharvest/coinswap/modules/coinswap/types"
+	"github.com/bharvest/coinswap/simapp"
 	tokencli "github.com/irisnet/irismod/modules/token/client/cli"
 	tokentestutil "github.com/irisnet/irismod/modules/token/client/testutil"
-	"github.com/irisnet/irismod/simapp"
 )
 
 type IntegrationTestSuite struct {

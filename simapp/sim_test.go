@@ -32,15 +32,9 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	coinswaptypes "github.com/irisnet/irismod/modules/coinswap/types"
-	htlctypes "github.com/irisnet/irismod/modules/htlc/types"
-	nfttypes "github.com/irisnet/irismod/modules/nft/types"
-	oracletypes "github.com/irisnet/irismod/modules/oracle/types"
-	randomtypes "github.com/irisnet/irismod/modules/random/types"
-	recordtypes "github.com/irisnet/irismod/modules/record/types"
-	servicetypes "github.com/irisnet/irismod/modules/service/types"
-	tokentypes "github.com/irisnet/irismod/modules/token/types"
-	"github.com/irisnet/irismod/simapp/helpers"
+	coinswaptypes "github.com/bharvest/coinswap/modules/coinswap/types"
+
+	"github.com/bharvest/coinswap/simapp/helpers"
 )
 
 // Get flags every time the simulator is run
@@ -188,14 +182,8 @@ func TestAppImportExport(t *testing.T) {
 		{app.keys[authzkeeper.StoreKey], newApp.keys[authzkeeper.StoreKey], [][]byte{}},
 
 		// check irismod module
-		{app.keys[tokentypes.StoreKey], newApp.keys[tokentypes.StoreKey], [][]byte{}},
-		{app.keys[recordtypes.StoreKey], newApp.keys[recordtypes.StoreKey], [][]byte{recordtypes.IntraTxCounterKey}},
-		{app.keys[nfttypes.StoreKey], newApp.keys[nfttypes.StoreKey], [][]byte{}},
-		{app.keys[htlctypes.StoreKey], newApp.keys[htlctypes.StoreKey], [][]byte{}},
+
 		{app.keys[coinswaptypes.StoreKey], newApp.keys[coinswaptypes.StoreKey], [][]byte{}},
-		{app.keys[servicetypes.StoreKey], newApp.keys[servicetypes.StoreKey], [][]byte{}},
-		{app.keys[oracletypes.StoreKey], newApp.keys[oracletypes.StoreKey], [][]byte{}},
-		{app.keys[randomtypes.StoreKey], newApp.keys[randomtypes.StoreKey], [][]byte{randomtypes.RandomKey}},
 	}
 
 	for _, skp := range storeKeysPrefixes {

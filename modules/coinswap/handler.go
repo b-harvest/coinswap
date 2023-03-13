@@ -4,8 +4,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/irisnet/irismod/modules/coinswap/keeper"
-	"github.com/irisnet/irismod/modules/coinswap/types"
+	"github.com/bharvest/coinswap/modules/coinswap/keeper"
+	"github.com/bharvest/coinswap/modules/coinswap/types"
 )
 
 // NewHandler returns a handler for all "coinswap" type messages.

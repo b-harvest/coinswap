@@ -3,8 +3,8 @@ package keeper
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	v150 "github.com/irisnet/irismod/modules/coinswap/migrations/v150"
-	v152 "github.com/irisnet/irismod/modules/coinswap/migrations/v152"
+	v150 "github.com/bharvest/coinswap/modules/coinswap/migrations/v150"
+	v152 "github.com/bharvest/coinswap/modules/coinswap/migrations/v152"
 )
 
 // Migrator is a struct for handling in-place store migrations.

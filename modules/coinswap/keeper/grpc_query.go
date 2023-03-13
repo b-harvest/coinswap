@@ -11,7 +11,7 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
-	"github.com/irisnet/irismod/modules/coinswap/types"
+	"github.com/bharvest/coinswap/modules/coinswap/types"
 )
 
 var _ types.QueryServer = Keeper{}

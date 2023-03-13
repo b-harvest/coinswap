@@ -1,10 +1,10 @@
 syntax = "proto3";
-package irismod.coinswap;
+package coinswap.coinswap;
 
 import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/irisnet/irismod/modules/coinswap/types";
+option go_package = "github.com/bharvest/coinswap/modules/coinswap/types";
 option (gogoproto.goproto_getters_all) = false;
 
 // Input defines the properties of order's input
@@ -41,12 +41,11 @@ message Params {
     (gogoproto.nullable) = false
   ];
 
-  cosmos.base.v1beta1.Coin pool_creation_fee = 2 [
-    (gogoproto.nullable) = false
-  ];
+  cosmos.base.v1beta1.Coin pool_creation_fee = 2
+      [ (gogoproto.nullable) = false ];
 
-  string tax_rate = 3 [ 
+  string tax_rate = 3 [
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable) = false 
+    (gogoproto.nullable) = false
   ];
 }

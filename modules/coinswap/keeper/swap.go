@@ -6,7 +6,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/irisnet/irismod/modules/coinswap/types"
+	"github.com/bharvest/coinswap/modules/coinswap/types"
 )
 
 func (k Keeper) swapCoins(ctx sdk.Context, sender, recipient sdk.AccAddress, coinSold, coinBought sdk.Coin) error {
@@ -27,7 +27,8 @@ func (k Keeper) swapCoins(ctx sdk.Context, sender, recipient sdk.AccAddress, coi
 	return k.bk.SendCoins(ctx, poolAddr, recipient, sdk.NewCoins(coinBought))
 }
 
-/**
+/*
+*
 Calculate the amount of another token to be received based on the exact amount of tokens sold
 @param exactSoldCoin : sold coin
 @param soldTokenDenom : received token's denom
@@ -60,7 +61,8 @@ func (k Keeper) calculateWithExactInput(ctx sdk.Context, exactSoldCoin sdk.Coin,
 	return boughtTokenAmt, nil
 }
 
-/**
+/*
+*
 Sell exact amount of a token for buying another, one of them must be standard token
 @param input: exact amount of the token to be sold
 @param output: min amount of the token to be bought
@@ -95,7 +97,8 @@ func (k Keeper) TradeExactInputForOutput(ctx sdk.Context, input types.Input, out
 	return boughtTokenAmt, nil
 }
 
-/**
+/*
+*
 Sell exact amount of a token for buying another, non of them are standard token
 @param input: exact amount of the token to be sold
 @param output: min amount of the token to be bought
@@ -141,7 +144,8 @@ func (k Keeper) doubleTradeExactInputForOutput(ctx sdk.Context, input types.Inpu
 	return boughtAmt, nil
 }
 
-/**
+/*
+*
 Calculate the amount of the token to be paid based on the exact amount of the token to be bought
 @param exactBoughtCoin
 @param soldTokenDenom
@@ -177,7 +181,8 @@ func (k Keeper) calculateWithExactOutput(ctx sdk.Context, exactBoughtCoin sdk.Co
 	return soldTokenAmt, nil
 }
 
-/**
+/*
+*
 Buy exact amount of a token by specifying the max amount of another token, one of them must be standard token
 @param input : max amount of the token to be paid
 @param output : exact amount of the token to be bought
@@ -212,7 +217,8 @@ func (k Keeper) TradeInputForExactOutput(ctx sdk.Context, input types.Input, out
 	return soldTokenAmt, nil
 }
 
-/**
+/*
+*
 Buy exact amount of a token by specifying the max amount of another token, non of them are standard token
 @param input : max amount of the token to be paid
 @param output : exact amount of the token to be bought
