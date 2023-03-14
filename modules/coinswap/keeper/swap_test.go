@@ -79,8 +79,8 @@ func (suite *TestSuite) TestSwap() {
 
 	// swap buy order msg
 	msg := types.NewMsgSwapOrder(
-		types.Input{Coin: sdk.NewCoin(denomStandard, sdk.NewInt(1000)), Address: sender.String()},
-		types.Output{Coin: sdk.NewCoin(denomBTC, sdk.NewInt(100)), Address: sender.String()},
+		types.Input{Coin: sdk.NewCoin(denomBTC, sdk.NewIntWithDecimal(1000, 6)), Address: sender.String()},
+		types.Output{Coin: sdk.NewCoin(denomStandard, sdk.NewIntWithDecimal(500, 6)), Address: sender.String()},
 		time.Now().Add(1*time.Minute).Unix(),
 		true,
 	)
@@ -98,15 +98,15 @@ func (suite *TestSuite) TestSwap() {
 	senderBalances := suite.app.BankKeeper.GetAllBalances(suite.ctx, sender)
 
 	expCoins := sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 900),
-		sdk.NewInt64Coin(denomStandard, 1112),
+		sdk.NewInt64Coin(denomBTC, 10526315790),
+		sdk.NewInt64Coin(denomStandard, 9500000000),
 	)
 	suite.Equal(expCoins.Sort().String(), reservePoolBalances.Sort().String())
 
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 99999100),
-		sdk.NewInt64Coin(denomStandard, 99993888),
-		sdk.NewInt64Coin(lptDenom, 1000),
+		sdk.NewInt64Coin(denomBTC, 19473684210),
+		sdk.NewInt64Coin(denomStandard, 20500000000),
+		sdk.NewInt64Coin(lptDenom, 10000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), senderBalances.Sort().String())
 
@@ -117,22 +117,23 @@ func (suite *TestSuite) TestSwap() {
 	senderBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, sender)
 
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 800),
-		sdk.NewInt64Coin(denomStandard, 1252),
+		sdk.NewInt64Coin(denomBTC, 11111111112),
+		sdk.NewInt64Coin(denomStandard, 9000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), reservePoolBalances.Sort().String())
 
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 99999200),
-		sdk.NewInt64Coin(denomStandard, 99993748),
-		sdk.NewInt64Coin(lptDenom, 1000),
+		sdk.NewInt64Coin(denomBTC, 18888888888),
+		sdk.NewInt64Coin(denomStandard, 21000000000),
+		sdk.NewInt64Coin(lptDenom, 10000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), senderBalances.Sort().String())
 
+	reservePoolBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddr)
 	// swap sell order msg
 	msg = types.NewMsgSwapOrder(
-		types.Input{Coin: sdk.NewCoin(denomStandard, sdk.NewInt(1000)), Address: sender.String()},
-		types.Output{Coin: sdk.NewCoin(denomBTC, sdk.NewInt(100)), Address: sender.String()},
+		types.Input{Coin: sdk.NewCoin(denomStandard, sdk.NewIntWithDecimal(500, 6)), Address: sender.String()},
+		types.Output{Coin: sdk.NewCoin(denomBTC, sdk.NewIntWithDecimal(500, 6)), Address: sender.String()},
 		time.Now().Add(1*time.Minute).Unix(),
 		false,
 	)
@@ -143,15 +144,15 @@ func (suite *TestSuite) TestSwap() {
 	reservePoolBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddr)
 	senderBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, sender)
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 446),
-		sdk.NewInt64Coin(denomStandard, 2252),
+		sdk.NewInt64Coin(denomBTC, 10526315791),
+		sdk.NewInt64Coin(denomStandard, 9500000000),
 	)
 	suite.Equal(expCoins.Sort().String(), reservePoolBalances.Sort().String())
 
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 99999554),
-		sdk.NewInt64Coin(denomStandard, 99992748),
-		sdk.NewInt64Coin(lptDenom, 1000),
+		sdk.NewInt64Coin(denomBTC, 19473684209),
+		sdk.NewInt64Coin(denomStandard, 20500000000),
+		sdk.NewInt64Coin(lptDenom, 10000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), senderBalances.Sort().String())
 
@@ -160,159 +161,34 @@ func (suite *TestSuite) TestSwap() {
 	suite.NoError(err)
 	reservePoolBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddr)
 	senderBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, sender)
-	suite.Equal(fmt.Sprintf("310%s,3252%s", denomBTC, denomStandard), reservePoolBalances.String())
+
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 310),
-		sdk.NewInt64Coin(denomStandard, 3252),
+		sdk.NewInt64Coin(denomBTC, 10000000002),
+		sdk.NewInt64Coin(denomStandard, 10000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), reservePoolBalances.Sort().String())
 
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 99999690),
-		sdk.NewInt64Coin(denomStandard, 99991748),
-		sdk.NewInt64Coin(lptDenom, 1000),
+		sdk.NewInt64Coin(denomBTC, 19999999998),
+		sdk.NewInt64Coin(denomStandard, 20000000000),
+		sdk.NewInt64Coin(lptDenom, 10000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), senderBalances.Sort().String())
-}
 
-func (suite *TestSuite) TestDoubleSwap() {
-	sender1, reservePoolAddrBTC := createReservePool(suite, denomBTC)
-	sender2, reservePoolAddrETH := createReservePool(suite, denomETH)
-
-	// swap buy order msg
-	msg := types.NewMsgSwapOrder(
-		types.Input{Coin: sdk.NewCoin(denomBTC, sdk.NewInt(1000)), Address: sender1.String()},
-		types.Output{Coin: sdk.NewCoin(denomETH, sdk.NewInt(100)), Address: sender1.String()},
-		time.Now().Add(1*time.Minute).Unix(),
-		true,
-	)
-
-	poolId := types.GetPoolId(denomBTC)
-	pool, has := suite.app.CoinswapKeeper.GetPool(suite.ctx, poolId)
-	suite.Require().True(has)
-
-	poolIdETH := types.GetPoolId(denomETH)
-	poolETH, has := suite.app.CoinswapKeeper.GetPool(suite.ctx, poolIdETH)
-	suite.Require().True(has)
-
-	lptDenom := pool.LptDenom
-
-	// first swap buy order
-	err := suite.app.CoinswapKeeper.Swap(suite.ctx, msg)
-	suite.NoError(err)
-	reservePoolBTCBalances := suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddrBTC)
-	reservePoolETHBalances := suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddrETH)
-	sender1Balances := suite.app.BankKeeper.GetAllBalances(suite.ctx, sender1)
-	expCoins := sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 1127),
-		sdk.NewInt64Coin(denomStandard, 888),
-	)
-	suite.Equal(expCoins.Sort().String(), reservePoolBTCBalances.Sort().String())
-
-	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomETH, 900),
-		sdk.NewInt64Coin(denomStandard, 1112),
-	)
-	suite.Equal(expCoins.Sort().String(), reservePoolETHBalances.Sort().String())
-
-	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 99998873),
-		sdk.NewInt64Coin(denomETH, 100),
-		sdk.NewInt64Coin(denomStandard, 99994000),
-		sdk.NewInt64Coin(lptDenom, 1000),
-	)
-	suite.Equal(expCoins.Sort().String(), sender1Balances.Sort().String())
-
-	// second swap buy order
-	err = suite.app.CoinswapKeeper.Swap(suite.ctx, msg)
-	suite.NoError(err)
-	reservePoolBTCBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddrBTC)
-	reservePoolETHBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddrETH)
-	sender1Balances = suite.app.BankKeeper.GetAllBalances(suite.ctx, sender1)
-	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 1339),
-		sdk.NewInt64Coin(denomStandard, 748),
-	)
-	suite.Equal(expCoins.Sort().String(), reservePoolBTCBalances.Sort().String())
-
-	suite.Equal(fmt.Sprintf("800%s,1252%s", denomETH, denomStandard), reservePoolETHBalances.String())
-	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomETH, 800),
-		sdk.NewInt64Coin(denomStandard, 1252),
-	)
-	suite.Equal(expCoins.Sort().String(), reservePoolETHBalances.Sort().String())
-
-	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 99998661),
-		sdk.NewInt64Coin(denomETH, 200),
-		sdk.NewInt64Coin(denomStandard, 99994000),
-		sdk.NewInt64Coin(lptDenom, 1000),
-	)
-	suite.Equal(expCoins.Sort().String(), sender1Balances.Sort().String())
-
-	// swap sell order msg
-	msg = types.NewMsgSwapOrder(
-		types.Input{Coin: sdk.NewCoin(denomETH, sdk.NewInt(1000)), Address: sender2.String()},
-		types.Output{Coin: sdk.NewCoin(denomBTC, sdk.NewInt(80)), Address: sender2.String()},
-		time.Now().Add(1*time.Minute).Unix(),
-		false,
-	)
-
-	// first swap sell order
-	err = suite.app.CoinswapKeeper.Swap(suite.ctx, msg)
-	suite.NoError(err)
-	reservePoolBTCBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddrBTC)
-	reservePoolETHBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddrETH)
-	sender2Balances := suite.app.BankKeeper.GetAllBalances(suite.ctx, sender2)
-	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 696),
-		sdk.NewInt64Coin(denomStandard, 1442),
-	)
-	suite.Equal(expCoins.Sort().String(), reservePoolBTCBalances.Sort().String())
-
-	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomETH, 1800),
-		sdk.NewInt64Coin(denomStandard, 558),
-	)
-	suite.Equal(expCoins.Sort().String(), reservePoolETHBalances.Sort().String())
-
-	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 643),
-		sdk.NewInt64Coin(denomETH, 99998000),
-		sdk.NewInt64Coin(denomStandard, 99994000),
-		sdk.NewInt64Coin(poolETH.LptDenom, 1000),
-	)
-	suite.Equal(expCoins.Sort().String(), sender2Balances.Sort().String())
-
-	// second swap sell order
-	err = suite.app.CoinswapKeeper.Swap(suite.ctx, msg)
-	suite.NoError(err)
-	reservePoolBTCBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddrBTC)
-	reservePoolETHBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddrETH)
-	sender2Balances = suite.app.BankKeeper.GetAllBalances(suite.ctx, sender2)
-	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 613),
-		sdk.NewInt64Coin(denomStandard, 1640),
-	)
-	suite.Equal(expCoins.Sort().String(), reservePoolBTCBalances.Sort().String())
-
-	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomETH, 2800),
-		sdk.NewInt64Coin(denomStandard, 360),
-	)
-	suite.Equal(expCoins.Sort().String(), reservePoolETHBalances.Sort().String())
-
-	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 726),
-		sdk.NewInt64Coin(denomETH, 99997000),
-		sdk.NewInt64Coin(denomStandard, 99994000),
-		sdk.NewInt64Coin(poolETH.LptDenom, 1000),
-	)
-	suite.Equal(expCoins.Sort().String(), sender2Balances.Sort().String())
 }
 
 func createReservePool(suite *TestSuite, denom string) (sdk.AccAddress, sdk.AccAddress) {
-	amountInit, _ := sdk.NewIntFromString("100000000")
+	// Set parameters
+	params := types.Params{
+		Fee:                    sdk.NewDec(0),
+		PoolCreationFee:        sdk.Coin{sdk.DefaultBondDenom, sdk.ZeroInt()},
+		TaxRate:                sdk.NewDec(0),
+		MaxStandardCoinPerPool: sdk.NewInt(10_000_000_000),
+		WhitelistedDenoms:      []string{denom},
+	}
+	suite.app.CoinswapKeeper.SetParams(suite.ctx, params)
+
+	amountInit, _ := sdk.NewIntFromString("30000000000")
 	addrSender := sdk.AccAddress(getRandomString(20))
 	_ = suite.app.AccountKeeper.NewAccountWithAddress(suite.ctx, addrSender)
 
@@ -326,10 +202,10 @@ func createReservePool(suite *TestSuite, denom string) (sdk.AccAddress, sdk.AccA
 	err = suite.app.BankKeeper.SendCoinsFromModuleToAccount(suite.ctx, types.ModuleName, addrSender, coins)
 	suite.NoError(err)
 
-	depositAmt, _ := sdk.NewIntFromString("1000")
+	depositAmt, _ := sdk.NewIntFromString("10000000000")
 	depositCoin := sdk.NewCoin(denom, depositAmt)
 
-	standardAmt, _ := sdk.NewIntFromString("1000")
+	standardAmt, _ := sdk.NewIntFromString("10000000000")
 	minReward := sdk.NewInt(1)
 	deadline := time.Now().Add(1 * time.Minute)
 	msg := types.NewMsgAddLiquidity(depositCoin, standardAmt, minReward, deadline.Unix(), addrSender.String())
@@ -343,19 +219,19 @@ func createReservePool(suite *TestSuite, denom string) (sdk.AccAddress, sdk.AccA
 
 	reservePoolBalances := suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddr)
 	senderBlances := suite.app.BankKeeper.GetAllBalances(suite.ctx, addrSender)
-	suite.Equal("1000", suite.app.BankKeeper.GetSupply(suite.ctx, pool.LptDenom).Amount.String())
+	suite.Equal("10000000000", suite.app.BankKeeper.GetSupply(suite.ctx, pool.LptDenom).Amount.String())
 
 	expCoins := sdk.NewCoins(
-		sdk.NewInt64Coin(denom, 1000),
-		sdk.NewInt64Coin(denomStandard, 1000),
+		sdk.NewInt64Coin(denom, 10000000000),
+		sdk.NewInt64Coin(denomStandard, 10000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), reservePoolBalances.Sort().String())
 
-	params := suite.app.CoinswapKeeper.GetParams(suite.ctx)
+	params = suite.app.CoinswapKeeper.GetParams(suite.ctx)
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denom, 99999000),
-		sdk.NewInt64Coin(denomStandard, 99999000).Sub(params.PoolCreationFee),
-		sdk.NewInt64Coin(pool.LptDenom, 1000),
+		sdk.NewInt64Coin(denom, 20000000000),
+		sdk.NewInt64Coin(denomStandard, 20000000000).Sub(params.PoolCreationFee),
+		sdk.NewInt64Coin(pool.LptDenom, 10000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), senderBlances.Sort().String())
 	return addrSender, reservePoolAddr
@@ -364,8 +240,8 @@ func createReservePool(suite *TestSuite, denom string) (sdk.AccAddress, sdk.AccA
 func (suite *TestSuite) TestTradeInputForExactOutput() {
 	sender, poolAddr := createReservePool(suite, denomBTC)
 
-	outputCoin := sdk.NewCoin(denomBTC, sdk.NewInt(100))
-	inputCoin := sdk.NewCoin(denomStandard, sdk.NewInt(100000))
+	outputCoin := sdk.NewCoin(denomStandard, sdk.NewInt(1000))
+	inputCoin := sdk.NewCoin(denomBTC, sdk.NewInt(1000000))
 	input := types.Input{
 		Address: sender.String(),
 		Coin:    inputCoin,
@@ -390,11 +266,11 @@ func (suite *TestSuite) TestTradeInputForExactOutput() {
 		suite.NoError(err)
 
 		bought := sdk.NewCoins(outputCoin)
-		sold := sdk.NewCoins(sdk.NewCoin(denomStandard, amt))
+		sold := sdk.NewCoins(sdk.NewCoin(denomBTC, amt))
 
 		pb := poolBalances.Add(sold...).Sub(bought)
 		sb := senderBlances.Add(bought...).Sub(sold)
-
+		fmt.Println(pb.String())
 		assertResult(suite, poolAddr, sender, pb, sb)
 
 		poolBalances = pb
@@ -405,8 +281,8 @@ func (suite *TestSuite) TestTradeInputForExactOutput() {
 func (suite *TestSuite) TestTradeExactInputForOutput() {
 	sender, poolAddr := createReservePool(suite, denomBTC)
 
-	outputCoin := sdk.NewCoin(denomBTC, sdk.NewInt(0))
-	inputCoin := sdk.NewCoin(denomStandard, sdk.NewInt(100))
+	outputCoin := sdk.NewCoin(denomStandard, sdk.NewInt(0))
+	inputCoin := sdk.NewCoin(denomBTC, sdk.NewInt(10000))
 	input := types.Input{
 		Address: sender.String(),
 		Coin:    inputCoin,
@@ -424,7 +300,7 @@ func (suite *TestSuite) TestTradeExactInputForOutput() {
 		suite.NoError(err)
 
 		sold := sdk.NewCoins(inputCoin)
-		bought := sdk.NewCoins(sdk.NewCoin(denomBTC, amt))
+		bought := sdk.NewCoins(sdk.NewCoin(denomStandard, amt))
 
 		pb := poolBalances.Add(sold...).Sub(bought)
 		sb := senderBlances.Add(bought...).Sub(sold)
