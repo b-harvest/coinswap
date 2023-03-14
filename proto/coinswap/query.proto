@@ -10,6 +10,11 @@ option go_package = "github.com/bharvest/coinswap/modules/coinswap/types";
 
 // Query creates service with coinswap as rpc
 service Query {
+
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/bharvest/coinswap/params";
+  }
+
   // LiquidityPool returns the liquidity pool for the provided
   // lpt_denom
   rpc LiquidityPool(QueryLiquidityPoolRequest)
@@ -22,6 +27,12 @@ service Query {
       returns (QueryLiquidityPoolsResponse) {
     option (google.api.http).get = "/bharvest/coinswap/pools";
   }
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryLiquidityPoolRequest is request type for the Query/LiquidityPool RPC
