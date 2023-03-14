@@ -1,7 +1,6 @@
 package keeper_test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -282,9 +281,6 @@ func (suite *TestSuite) TestLiquidity() {
 		suite.ctx.BlockHeader().Time.Unix(),
 		addrSender2.String(),
 	)
-
-	reservePoolBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, poolAddr)
-	fmt.Print(reservePoolBalances.String())
 
 	_, err = suite.app.CoinswapKeeper.RemoveLiquidity(suite.ctx, msgRemove)
 	suite.NoError(err)
