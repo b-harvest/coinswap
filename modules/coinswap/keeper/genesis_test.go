@@ -13,6 +13,7 @@ func TestGenesisSuite(t *testing.T) {
 }
 
 func (suite *TestSuite) TestInitGenesisAndExportGenesis() {
+	k, ctx := suite.app.CoinswapKeeper, suite.ctx
 	expGenesis := types.GenesisState{
 		Params:        types.DefaultParams(),
 		StandardDenom: denomStandard,
@@ -25,7 +26,17 @@ func (suite *TestSuite) TestInitGenesisAndExportGenesis() {
 		}},
 		Sequence: 2,
 	}
-	suite.app.CoinswapKeeper.InitGenesis(suite.ctx, expGenesis)
-	actGenesis := suite.app.CoinswapKeeper.ExportGenesis(suite.ctx)
-	suite.Require().Equal(expGenesis, actGenesis)
+	k.InitGenesis(suite.ctx, expGenesis)
+	genState := k.ExportGenesis(ctx)
+	suite.Require().Equal(expGenesis, genState)
+
+	bz := suite.app.AppCodec().MustMarshalJSON(&genState)
+
+	var genState2 types.GenesisState
+	suite.app.AppCodec().MustUnmarshalJSON(bz, &genState2)
+	k.InitGenesis(ctx, genState2)
+	genState3 := k.ExportGenesis(ctx)
+
+	suite.Require().Equal(genState, genState2)
+	suite.Require().Equal(genState2, genState3)
 }
