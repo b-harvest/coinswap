@@ -14,4 +14,5 @@ var (
 	ErrInvalidDeadline         = sdkerrors.Register(ModuleName, 7, "invalid deadline")
 	ErrConstraintNotMet        = sdkerrors.Register(ModuleName, 8, "constraint not met")
 	ErrInsufficientFunds       = sdkerrors.Register(ModuleName, 9, "insufficient funds")
+	ErrMaxedStandardDenom      = sdkerrors.Register(ModuleName, 10, "standard denom amount exceed max list")
 )

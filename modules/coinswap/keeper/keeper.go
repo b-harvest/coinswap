@@ -74,13 +74,12 @@ func (k Keeper) Swap(ctx sdk.Context, msg *types.MsgSwapOrder) error {
 	standardDenom := k.GetStandardDenom(ctx)
 	isDoubleSwap := (msg.Input.Coin.Denom != standardDenom) && (msg.Output.Coin.Denom != standardDenom)
 
-	if msg.IsBuyOrder && isDoubleSwap {
-		amount, err = k.doubleTradeInputForExactOutput(ctx, msg.Input, msg.Output)
-	} else if msg.IsBuyOrder && !isDoubleSwap {
+	if isDoubleSwap {
+		return sdkerrors.Wrapf(types.ErrNotContainStandardDenom, "unsupported swap: standard coin must be in either Input or Output")
+	}
+	if msg.IsBuyOrder {
 		amount, err = k.TradeInputForExactOutput(ctx, msg.Input, msg.Output)
-	} else if !msg.IsBuyOrder && isDoubleSwap {
-		amount, err = k.doubleTradeExactInputForOutput(ctx, msg.Input, msg.Output)
-	} else if !msg.IsBuyOrder && !isDoubleSwap {
+	} else {
 		amount, err = k.TradeExactInputForOutput(ctx, msg.Input, msg.Output)
 	}
 	if err != nil {
@@ -108,6 +107,24 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity) (sdk.C
 		return sdk.Coin{}, sdkerrors.Wrapf(types.ErrInvalidDenom,
 			"MaxToken: %s should not be StandardDenom", msg.MaxToken.String())
 	}
+
+	params := k.GetParams(ctx)
+	whitelistedDenoms := params.WhitelistedDenoms
+
+	// check if a denom exists in the whitelist
+	search := msg.MaxToken.Denom
+	found := false
+	for _, v := range whitelistedDenoms {
+		if v == search {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return sdk.Coin{}, sdkerrors.Wrapf(types.ErrInvalidDenom,
+			"MaxToken: %s is not in the whitelisted denoms", msg.MaxToken.String())
+	}
+
 	var mintLiquidityAmt sdk.Int
 	var depositToken sdk.Coin
 	var standardCoin = sdk.NewCoin(standardDenom, msg.ExactStandardAmt)
@@ -129,9 +146,15 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity) (sdk.C
 		}
 
 		mintLiquidityAmt = msg.ExactStandardAmt
+
+		if mintLiquidityAmt.GT(params.MaxStandardCoinPerPool) {
+			return sdk.Coin{}, sdkerrors.Wrap(types.ErrMaxedStandardDenom, fmt.Sprintf("liquidity amount not met, max standard coin amount: no bigger than %s, actual: %s", params.MaxStandardCoinPerPool.String(), mintLiquidityAmt.String()))
+		}
+
 		if mintLiquidityAmt.LT(msg.MinLiquidity) {
 			return sdk.Coin{}, sdkerrors.Wrap(types.ErrConstraintNotMet, fmt.Sprintf("liquidity amount not met, user expected: no less than %s, actual: %s", msg.MinLiquidity.String(), mintLiquidityAmt.String()))
 		}
+
 		depositToken = sdk.NewCoin(msg.MaxToken.Denom, msg.MaxToken.Amount)
 		pool = k.CreatePool(ctx, msg.MaxToken.Denom)
 	} else {
@@ -144,11 +167,16 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity) (sdk.C
 		tokenReserveAmt := balances.AmountOf(msg.MaxToken.Denom)
 		liquidity := k.bk.GetSupply(ctx, pool.LptDenom).Amount
 
-		mintLiquidityAmt = (liquidity.Mul(msg.ExactStandardAmt)).Quo(standardReserveAmt)
+		if standardReserveAmt.GTE(params.MaxStandardCoinPerPool) {
+			return sdk.Coin{}, sdkerrors.Wrap(types.ErrMaxedStandardDenom, fmt.Sprintf("pool standard coin is maxed out: %s", params.MaxStandardCoinPerPool.String()))
+		}
+
+		maxStandardInputAmt := sdk.MinInt(msg.ExactStandardAmt, params.MaxStandardCoinPerPool.Quo(standardReserveAmt))
+		mintLiquidityAmt = (liquidity.Mul(maxStandardInputAmt)).Quo(standardReserveAmt)
 		if mintLiquidityAmt.LT(msg.MinLiquidity) {
 			return sdk.Coin{}, sdkerrors.Wrap(types.ErrConstraintNotMet, fmt.Sprintf("liquidity amount not met, user expected: no less than %s, actual: %s", msg.MinLiquidity.String(), mintLiquidityAmt.String()))
 		}
-		depositAmt := (tokenReserveAmt.Mul(msg.ExactStandardAmt)).Quo(standardReserveAmt).AddRaw(1)
+		depositAmt := (tokenReserveAmt.Mul(maxStandardInputAmt)).Quo(standardReserveAmt).AddRaw(1)
 		depositToken = sdk.NewCoin(msg.MaxToken.Denom, depositAmt)
 
 		if depositAmt.GT(msg.MaxToken.Amount) {

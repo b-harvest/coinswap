@@ -99,53 +99,6 @@ func (k Keeper) TradeExactInputForOutput(ctx sdk.Context, input types.Input, out
 
 /*
 *
-Sell exact amount of a token for buying another, non of them are standard token
-@param input: exact amount of the token to be sold
-@param output: min amount of the token to be bought
-@param sender: address of the sender
-@param receipt: address of the receiver
-@return: actual amount of the token to be bought
-*/
-func (k Keeper) doubleTradeExactInputForOutput(ctx sdk.Context, input types.Input, output types.Output) (sdk.Int, error) {
-	standardDenom := k.GetStandardDenom(ctx)
-	standardAmount, err := k.calculateWithExactInput(ctx, input.Coin, standardDenom)
-	if err != nil {
-		return sdk.ZeroInt(), err
-	}
-	standardCoin := sdk.NewCoin(standardDenom, standardAmount)
-
-	inputAddress, err := sdk.AccAddressFromBech32(input.Address)
-	if err != nil {
-		return sdk.ZeroInt(), err
-	}
-	outputAddress, err := sdk.AccAddressFromBech32(output.Address)
-	if err != nil {
-		return sdk.ZeroInt(), err
-	}
-
-	if err := k.swapCoins(ctx, inputAddress, outputAddress, input.Coin, standardCoin); err != nil {
-		return sdk.ZeroInt(), err
-	}
-
-	boughtAmt, err := k.calculateWithExactInput(ctx, standardCoin, output.Coin.Denom)
-	if err != nil {
-		return sdk.ZeroInt(), err
-	}
-	boughtToken := sdk.NewCoin(output.Coin.Denom, boughtAmt)
-	// assert that the calculated amount is less than the
-	// minimum amount the buyer is willing to buy.
-	if boughtAmt.LT(output.Coin.Amount) {
-		return sdk.ZeroInt(), sdkerrors.Wrap(types.ErrConstraintNotMet, fmt.Sprintf("insufficient amount of %s, user expected: %s, actual: %s", output.Coin.Denom, output.Coin.Amount.String(), boughtAmt.String()))
-	}
-
-	if err := k.swapCoins(ctx, inputAddress, outputAddress, standardCoin, boughtToken); err != nil {
-		return sdk.ZeroInt(), err
-	}
-	return boughtAmt, nil
-}
-
-/*
-*
 Calculate the amount of the token to be paid based on the exact amount of the token to be bought
 @param exactBoughtCoin
 @param soldTokenDenom
@@ -212,53 +165,6 @@ func (k Keeper) TradeInputForExactOutput(ctx sdk.Context, input types.Input, out
 	}
 
 	if err := k.swapCoins(ctx, inputAddress, outputAddress, soldToken, output.Coin); err != nil {
-		return sdk.ZeroInt(), err
-	}
-	return soldTokenAmt, nil
-}
-
-/*
-*
-Buy exact amount of a token by specifying the max amount of another token, non of them are standard token
-@param input : max amount of the token to be paid
-@param output : exact amount of the token to be bought
-@param sender : address of the sender
-@param receipt : address of the receiver
-@return : actual amount of the token to be paid
-*/
-func (k Keeper) doubleTradeInputForExactOutput(ctx sdk.Context, input types.Input, output types.Output) (sdk.Int, error) {
-	standardDenom := k.GetStandardDenom(ctx)
-	soldStandardAmount, err := k.calculateWithExactOutput(ctx, output.Coin, standardDenom)
-	if err != nil {
-		return sdk.ZeroInt(), err
-	}
-	soldStandardCoin := sdk.NewCoin(standardDenom, soldStandardAmount)
-
-	soldTokenAmt, err := k.calculateWithExactOutput(ctx, soldStandardCoin, input.Coin.Denom)
-	if err != nil {
-		return sdk.ZeroInt(), err
-	}
-	soldTokenCoin := sdk.NewCoin(input.Coin.Denom, soldTokenAmt)
-
-	// assert that the calculated amount is less than the
-	// max amount the buyer is willing to sell.
-	if soldTokenAmt.GT(input.Coin.Amount) {
-		return sdk.ZeroInt(), sdkerrors.Wrap(types.ErrConstraintNotMet, fmt.Sprintf("insufficient amount of %s, user expected: %s, actual: %s", input.Coin.Denom, input.Coin.Amount.String(), soldTokenAmt.String()))
-	}
-
-	inputAddress, err := sdk.AccAddressFromBech32(input.Address)
-	if err != nil {
-		return sdk.ZeroInt(), err
-	}
-	outputAddress, err := sdk.AccAddressFromBech32(output.Address)
-	if err != nil {
-		return sdk.ZeroInt(), err
-	}
-
-	if err := k.swapCoins(ctx, inputAddress, outputAddress, soldTokenCoin, soldStandardCoin); err != nil {
-		return sdk.ZeroInt(), err
-	}
-	if err := k.swapCoins(ctx, inputAddress, outputAddress, soldStandardCoin, output.Coin); err != nil {
 		return sdk.ZeroInt(), err
 	}
 	return soldTokenAmt, nil
