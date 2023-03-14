@@ -26,18 +26,24 @@ func (suite *TestSuite) TestNewQuerier() {
 	}
 	legacyAmino := suite.app.LegacyAmino()
 
+	k, ctx := suite.app.CoinswapKeeper, suite.ctx
+
+	params := k.GetParams(ctx)
+	params.WhitelistedDenoms = []string{denomBTC}
+	k.SetParams(ctx, params)
+
 	querier := keeper.NewQuerier(suite.app.CoinswapKeeper, legacyAmino)
 	res, err := querier(suite.ctx, []string{"other"}, req)
 	suite.Error(err)
 	suite.Nil(res)
 
 	btcAmt, _ := sdk.NewIntFromString("100")
-	standardAmt, _ := sdk.NewIntFromString("10000000000000000000")
+	standardAmt, _ := sdk.NewIntFromString("1000000000")
 	depositCoin := sdk.NewCoin(denomBTC, btcAmt)
 	minReward := sdk.NewInt(1)
 	deadline := time.Now().Add(1 * time.Minute)
 	msg := types.NewMsgAddLiquidity(depositCoin, standardAmt, minReward, deadline.Unix(), addrSender1.String())
-	lptCoin, _ := suite.app.CoinswapKeeper.AddLiquidity(suite.ctx, msg)
+	lptCoin, _ := k.AddLiquidity(ctx, msg)
 
 	// test queryLiquidity
 
@@ -59,5 +65,5 @@ func (suite *TestSuite) TestNewQuerier() {
 	suite.Equal(standard, response.Pool.Standard)
 	suite.Equal(token, response.Pool.Token)
 	suite.Equal(liquidity, response.Pool.Lpt)
-	suite.Equal(suite.app.CoinswapKeeper.GetParams(suite.ctx).Fee.String(), response.Pool.Fee)
+	suite.Equal(k.GetParams(ctx).Fee.String(), response.Pool.Fee)
 }
