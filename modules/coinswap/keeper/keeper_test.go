@@ -14,6 +14,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
+	"github.com/bharvest/coinswap/modules/coinswap/keeper"
 	"github.com/bharvest/coinswap/modules/coinswap/types"
 	"github.com/bharvest/coinswap/simapp"
 )
@@ -35,7 +36,9 @@ type TestSuite struct {
 
 	ctx         sdk.Context
 	app         *simapp.SimApp
+	keeper      keeper.Keeper
 	queryClient types.QueryClient
+	msgServer   types.MsgServer
 }
 
 func (suite *TestSuite) SetupTest() {
@@ -48,6 +51,7 @@ func (suite *TestSuite) SetupTest() {
 
 	suite.app = app
 	suite.ctx = ctx
+	suite.keeper = app.CoinswapKeeper
 	suite.queryClient = queryClient
 
 	sdk.SetCoinDenomRegex(func() string {

@@ -16,6 +16,14 @@ import (
 
 var _ types.QueryServer = Keeper{}
 
+// Params queries the parameters of the liquidity module.
+func (k Keeper) Params(c context.Context, _ *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(c)
+	var params types.Params
+	k.paramSpace.GetParamSet(ctx, &params)
+	return &types.QueryParamsResponse{Params: params}, nil
+}
+
 // LiquidityPool returns the liquidity pool information of the denom
 func (k Keeper) LiquidityPool(c context.Context, req *types.QueryLiquidityPoolRequest) (*types.QueryLiquidityPoolResponse, error) {
 	if req == nil {
