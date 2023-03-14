@@ -11,18 +11,28 @@ import (
 
 // Parameter store keys
 var (
-	KeyFee             = []byte("Fee")             // fee key
-	KeyPoolCreationFee = []byte("PoolCreationFee") // fee key
-	KeyTaxRate         = []byte("TaxRate")         // fee key
-	KeyStandardDenom   = []byte("StandardDenom")   // standard token denom key
+	KeyFee                    = []byte("Fee")                    // fee key
+	KeyPoolCreationFee        = []byte("PoolCreationFee")        // fee key
+	KeyTaxRate                = []byte("TaxRate")                // fee key
+	KeyStandardDenom          = []byte("StandardDenom")          // standard token denom key
+	KeyMaxStandardCoinPerPool = []byte("MaxStandardCoinPerPool") // max standard coin amount per pool
+	KeyWhitelistedDenoms      = []byte("WhitelistedDenoms")      // whitelisted denoms
+
+	DefaultFee                    = sdk.NewDecWithPrec(0, 0)
+	DefaultPoolCreationFee        = sdk.NewInt64Coin(sdk.DefaultBondDenom, 0)
+	DefaultTaxRate                = sdk.NewDecWithPrec(0, 1)
+	DefaultMaxStandardCoinPerPool = sdk.NewInt(10_000_000_000)
+	DefaultWhitelistedDenoms      = []string{}
 )
 
 // NewParams is the coinswap params constructor
-func NewParams(fee, taxRate sdk.Dec, poolCreationFee sdk.Coin) Params {
+func NewParams(fee, taxRate sdk.Dec, poolCreationFee sdk.Coin, maxStandardCoinPerPool sdk.Int, whitelistedDenoms []string) Params {
 	return Params{
-		Fee:             fee,
-		TaxRate:         taxRate,
-		PoolCreationFee: poolCreationFee,
+		Fee:                    fee,
+		TaxRate:                taxRate,
+		PoolCreationFee:        poolCreationFee,
+		MaxStandardCoinPerPool: maxStandardCoinPerPool,
+		WhitelistedDenoms:      whitelistedDenoms,
 	}
 }
 
@@ -37,16 +47,19 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyFee, &p.Fee, validateFee),
 		paramtypes.NewParamSetPair(KeyPoolCreationFee, &p.PoolCreationFee, validatePoolCreationFee),
 		paramtypes.NewParamSetPair(KeyTaxRate, &p.TaxRate, validateTaxRate),
+		paramtypes.NewParamSetPair(KeyMaxStandardCoinPerPool, &p.MaxStandardCoinPerPool, validateMaxStandardCoinPerPool),
+		paramtypes.NewParamSetPair(KeyWhitelistedDenoms, &p.WhitelistedDenoms, validateWhitelistedDeoms),
 	}
 }
 
 // DefaultParams returns the default coinswap module parameters
 func DefaultParams() Params {
-	fee := sdk.NewDecWithPrec(3, 3)
 	return Params{
-		Fee:             fee,
-		PoolCreationFee: sdk.NewInt64Coin(sdk.DefaultBondDenom, 5000),
-		TaxRate:         sdk.NewDecWithPrec(4, 1), // 0.4 (40%)
+		Fee:                    DefaultFee,
+		PoolCreationFee:        DefaultPoolCreationFee,
+		TaxRate:                DefaultTaxRate,
+		MaxStandardCoinPerPool: DefaultMaxStandardCoinPerPool,
+		WhitelistedDenoms:      DefaultWhitelistedDenoms,
 	}
 }
 
@@ -58,7 +71,7 @@ func (p Params) String() string {
 
 // Validate returns err if Params is invalid
 func (p Params) Validate() error {
-	if !p.Fee.GT(sdk.ZeroDec()) || !p.Fee.LT(sdk.OneDec()) {
+	if p.Fee.IsNegative() || !p.Fee.LT(sdk.OneDec()) {
 		return fmt.Errorf("fee must be positive and less than 1: %s", p.Fee.String())
 	}
 	return nil
@@ -70,7 +83,7 @@ func validateFee(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if !v.GT(sdk.ZeroDec()) || !v.LT(sdk.OneDec()) {
+	if v.IsNegative() || !v.LT(sdk.OneDec()) {
 		return fmt.Errorf("fee must be positive and less than 1: %s", v.String())
 	}
 
@@ -83,7 +96,7 @@ func validatePoolCreationFee(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if !v.IsPositive() {
+	if v.IsNegative() {
 		return fmt.Errorf("poolCreationFee must be positive: %s", v.String())
 	}
 	return nil
@@ -95,8 +108,34 @@ func validateTaxRate(i interface{}) error {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	if !v.GT(sdk.ZeroDec()) || !v.LT(sdk.OneDec()) {
+	if v.IsNegative() || !v.LT(sdk.OneDec()) {
 		return fmt.Errorf("fee must be positive and less than 1: %s", v.String())
+	}
+	return nil
+}
+
+func validateMaxStandardCoinPerPool(i interface{}) error {
+	v, ok := i.(sdk.Int)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	if !v.IsPositive() {
+		return fmt.Errorf("maxStandardCoinPerPool must be positive: %s", v.String())
+	}
+	return nil
+}
+
+func validateWhitelistedDeoms(i interface{}) error {
+	v, ok := i.([]string)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+
+	for _, denom := range v {
+		if err := sdk.ValidateDenom(denom); err != nil {
+			return err
+		}
 	}
 	return nil
 }
