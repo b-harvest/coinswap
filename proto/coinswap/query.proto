@@ -13,7 +13,7 @@ option go_package = "github.com/bharvest/coinswap/modules/coinswap/types";
 service Query {
   // Params returns parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
-    option (google.api.http).get = "/bhravest/coinswap/params";
+    option (google.api.http).get = "/bharvest/coinswap/params";
   }
 
   // LiquidityPool returns the liquidity pool for the provided
