@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
-	"github.com/bharvest/coinswap/modules/coinswap/types"
+	"github.com/b-harvest/coinswap/modules/coinswap/types"
 )
 
 func TestGenesisSuite(t *testing.T) {

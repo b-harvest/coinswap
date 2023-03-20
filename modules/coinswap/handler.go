@@ -4,8 +4,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/bharvest/coinswap/modules/coinswap/keeper"
-	"github.com/bharvest/coinswap/modules/coinswap/types"
+	"github.com/b-harvest/coinswap/modules/coinswap/keeper"
+	"github.com/b-harvest/coinswap/modules/coinswap/types"
 )
 
 // NewHandler returns a handler for all "coinswap" type messages.

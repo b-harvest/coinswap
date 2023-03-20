@@ -7,7 +7,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 
-	"github.com/bharvest/coinswap/modules/coinswap/types"
+	"github.com/b-harvest/coinswap/modules/coinswap/types"
 )
 
 type msgServer struct {

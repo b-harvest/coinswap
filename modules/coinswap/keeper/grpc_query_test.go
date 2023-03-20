@@ -3,7 +3,7 @@ package keeper_test
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/bharvest/coinswap/modules/coinswap/types"
+	"github.com/b-harvest/coinswap/modules/coinswap/types"
 )
 
 func (s *TestSuite) TestGRPCParams() {

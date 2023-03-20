@@ -15,8 +15,8 @@ import (
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 	"github.com/cosmos/cosmos-sdk/x/simulation"
 
-	"github.com/bharvest/coinswap/modules/coinswap/keeper"
-	"github.com/bharvest/coinswap/modules/coinswap/types"
+	"github.com/b-harvest/coinswap/modules/coinswap/keeper"
+	"github.com/b-harvest/coinswap/modules/coinswap/types"
 )
 
 // Simulation operation weights constants

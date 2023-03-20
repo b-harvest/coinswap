@@ -19,10 +19,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
-	"github.com/bharvest/coinswap/modules/coinswap/client/rest"
-	"github.com/bharvest/coinswap/modules/coinswap/keeper"
-	"github.com/bharvest/coinswap/modules/coinswap/simulation"
-	"github.com/bharvest/coinswap/modules/coinswap/types"
+	"github.com/b-harvest/coinswap/modules/coinswap/client/rest"
+	"github.com/b-harvest/coinswap/modules/coinswap/keeper"
+	"github.com/b-harvest/coinswap/modules/coinswap/simulation"
+	"github.com/b-harvest/coinswap/modules/coinswap/types"
 )
 
 var (

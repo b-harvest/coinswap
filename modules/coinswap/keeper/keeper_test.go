@@ -14,9 +14,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 
-	"github.com/bharvest/coinswap/modules/coinswap/keeper"
-	"github.com/bharvest/coinswap/modules/coinswap/types"
-	"github.com/bharvest/coinswap/simapp"
+	"github.com/b-harvest/coinswap/modules/coinswap/keeper"
+	"github.com/b-harvest/coinswap/modules/coinswap/types"
+	"github.com/b-harvest/coinswap/simapp"
 )
 
 const (

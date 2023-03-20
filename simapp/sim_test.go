@@ -32,9 +32,9 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
-	coinswaptypes "github.com/bharvest/coinswap/modules/coinswap/types"
+	coinswaptypes "github.com/b-harvest/coinswap/modules/coinswap/types"
 
-	"github.com/bharvest/coinswap/simapp/helpers"
+	"github.com/b-harvest/coinswap/simapp/helpers"
 )
 
 // Get flags every time the simulator is run

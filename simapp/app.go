@@ -91,9 +91,9 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/modules/core/keeper"
 	ibcmock "github.com/cosmos/ibc-go/testing/mock"
 
-	"github.com/bharvest/coinswap/modules/coinswap"
-	coinswapkeeper "github.com/bharvest/coinswap/modules/coinswap/keeper"
-	coinswaptypes "github.com/bharvest/coinswap/modules/coinswap/types"
+	"github.com/b-harvest/coinswap/modules/coinswap"
+	coinswapkeeper "github.com/b-harvest/coinswap/modules/coinswap/keeper"
+	coinswaptypes "github.com/b-harvest/coinswap/modules/coinswap/types"
 
 	// unnamed import of statik for swagger UI support
 	_ "github.com/cosmos/cosmos-sdk/client/docs/statik"

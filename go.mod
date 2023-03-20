@@ -1,4 +1,4 @@
-module github.com/bharvest/coinswap
+module github.com/b-harvest/coinswap
 
 go 1.18
 
