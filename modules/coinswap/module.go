@@ -19,7 +19,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/module"
 	simtypes "github.com/cosmos/cosmos-sdk/types/simulation"
 
+	"github.com/b-harvest/coinswap/modules/coinswap/client/cli"
 	"github.com/b-harvest/coinswap/modules/coinswap/client/rest"
+
 	"github.com/b-harvest/coinswap/modules/coinswap/keeper"
 	"github.com/b-harvest/coinswap/modules/coinswap/simulation"
 	"github.com/b-harvest/coinswap/modules/coinswap/types"
@@ -79,7 +81,7 @@ func (AppModuleBasic) GetTxCmd() *cobra.Command {
 // GetQueryCmd returns no root query command for the coinswap module.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	// TODO: add cmd
-	return nil
+	return cli.GetQueryCmd()
 }
 
 // RegisterInterfaces registers interfaces and implementations of the coinswap module.
