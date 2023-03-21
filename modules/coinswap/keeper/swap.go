@@ -91,6 +91,24 @@ func (k Keeper) TradeExactInputForOutput(ctx sdk.Context, input types.Input, out
 		return sdk.ZeroInt(), err
 	}
 
+	standardDenom := k.GetStandardDenom(ctx)
+	var quoteCoinToSwap sdk.Coin
+
+	if boughtToken.Denom != standardDenom {
+		quoteCoinToSwap = boughtToken
+	} else {
+		quoteCoinToSwap = input.Coin
+	}
+
+	maxSwapAmount, err := k.GetMaximumSwapAmount(ctx, quoteCoinToSwap.Denom)
+	if err != nil {
+		return sdk.ZeroInt(), err
+	}
+
+	if quoteCoinToSwap.Amount.GT(maxSwapAmount.Amount) {
+		return sdk.ZeroInt(), sdkerrors.Wrap(types.ErrConstraintNotMet, fmt.Sprintf("expected swap amount %s%s exceeding swap amount limit %s%s", quoteCoinToSwap.Amount.String(), quoteCoinToSwap.Denom, maxSwapAmount.Amount.String(), maxSwapAmount.Denom))
+	}
+
 	if err := k.swapCoins(ctx, inputAddress, outputAddress, input.Coin, boughtToken); err != nil {
 		return sdk.ZeroInt(), err
 	}
@@ -148,6 +166,7 @@ func (k Keeper) TradeInputForExactOutput(ctx sdk.Context, input types.Input, out
 	if err != nil {
 		return sdk.ZeroInt(), err
 	}
+
 	// assert that the calculated amount is less than the
 	// max amount the buyer is willing to pay.
 	if soldTokenAmt.GT(input.Coin.Amount) {
@@ -164,10 +183,38 @@ func (k Keeper) TradeInputForExactOutput(ctx sdk.Context, input types.Input, out
 		return sdk.ZeroInt(), err
 	}
 
+	standardDenom := k.GetStandardDenom(ctx)
+	var quoteCoinToSwap sdk.Coin
+
+	if soldToken.Denom != standardDenom {
+		quoteCoinToSwap = soldToken
+	} else {
+		quoteCoinToSwap = output.Coin
+	}
+
+	maxSwapAmount, err := k.GetMaximumSwapAmount(ctx, quoteCoinToSwap.Denom)
+	if err != nil {
+		return sdk.ZeroInt(), err
+	}
+
+	if quoteCoinToSwap.Amount.GT(maxSwapAmount.Amount) {
+		return sdk.ZeroInt(), sdkerrors.Wrap(types.ErrConstraintNotMet, fmt.Sprintf("expected swap amount %s%s exceeding swap amount limit %s%s", quoteCoinToSwap.Amount.String(), quoteCoinToSwap.Denom, maxSwapAmount.Amount.String(), maxSwapAmount.Denom))
+	}
+
 	if err := k.swapCoins(ctx, inputAddress, outputAddress, soldToken, output.Coin); err != nil {
 		return sdk.ZeroInt(), err
 	}
 	return soldTokenAmt, nil
+}
+
+func (k Keeper) GetMaximumSwapAmount(ctx sdk.Context, denom string) (sdk.Coin, error) {
+	params := k.GetParams(ctx)
+	for _, coin := range params.MaxSwapAmount {
+		if coin.Denom == denom {
+			return coin, nil
+		}
+	}
+	return sdk.Coin{}, sdkerrors.Wrap(types.ErrInvalidDenom, fmt.Sprintf("invalid denom: %s, denom is not whitelisted", denom))
 }
 
 // GetInputPrice returns the amount of coins bought (calculated) given the input amount being sold (exact)

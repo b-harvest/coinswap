@@ -54,5 +54,8 @@ message Params {
     (gogoproto.nullable) = false
   ];
 
-  repeated string whitelisted_denoms = 6;
+  repeated cosmos.base.v1beta1.Coin max_swap_amount = 6 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false
+  ];
 }

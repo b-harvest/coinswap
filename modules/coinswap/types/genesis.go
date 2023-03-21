@@ -6,6 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+const DefaultStandardDenom = "acanto"
+
 // NewGenesisState is the constructor function for GenesisState
 func NewGenesisState(params Params, denom string) *GenesisState {
 	return &GenesisState{
@@ -18,7 +20,7 @@ func NewGenesisState(params Params, denom string) *GenesisState {
 func DefaultGenesisState() *GenesisState {
 	return &GenesisState{
 		Params:        DefaultParams(),
-		StandardDenom: sdk.DefaultBondDenom,
+		StandardDenom: DefaultStandardDenom,
 		Sequence:      1,
 	}
 }

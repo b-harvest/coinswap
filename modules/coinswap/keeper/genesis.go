@@ -15,9 +15,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 	}
 
 	// init to prevent nil slice, []types.WhitelistedValidator(nil)
-	if genState.Params.WhitelistedDenoms == nil || len(genState.Params.WhitelistedDenoms) == 0 {
-		genState.Params.WhitelistedDenoms = []string{}
-	}
+	//if genState.Params.WhitelistedDenoms == nil || len(genState.Params.WhitelistedDenoms) == 0 {
+	//	genState.Params.WhitelistedDenoms = []string{}
+	//}
 	k.SetParams(ctx, genState.Params)
 	k.SetStandardDenom(ctx, genState.StandardDenom)
 	k.setSequence(ctx, genState.Sequence)
@@ -31,9 +31,9 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) types.GenesisState {
 
 	params := k.GetParams(ctx)
 	// init to prevent nil slice, []types.WhitelistedValidator(nil)
-	if params.WhitelistedDenoms == nil || len(params.WhitelistedDenoms) == 0 {
-		params.WhitelistedDenoms = []string{}
-	}
+	//if params.WhitelistedDenoms == nil || len(params.WhitelistedDenoms) == 0 {
+	//	params.WhitelistedDenoms = []string{}
+	//}
 	return types.GenesisState{
 		Params:        params,
 		StandardDenom: k.GetStandardDenom(ctx),

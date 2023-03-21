@@ -77,35 +77,45 @@ func (suite *TestSuite) TestGetOutputPrice() {
 func (suite *TestSuite) TestSwap() {
 	sender, reservePoolAddr := createReservePool(suite, denomBTC)
 
-	// swap buy order msg
-	msg := types.NewMsgSwapOrder(
-		types.Input{Coin: sdk.NewCoin(denomBTC, sdk.NewIntWithDecimal(1000, 6)), Address: sender.String()},
-		types.Output{Coin: sdk.NewCoin(denomStandard, sdk.NewIntWithDecimal(500, 6)), Address: sender.String()},
-		time.Now().Add(1*time.Minute).Unix(),
-		true,
-	)
-
 	poolId := types.GetPoolId(denomBTC)
 	pool, has := suite.app.CoinswapKeeper.GetPool(suite.ctx, poolId)
 	suite.Require().True(has)
 
 	lptDenom := pool.LptDenom
 
-	// first swap buy order
+	// swap buy order msg
+	msg := types.NewMsgSwapOrder(
+		types.Input{Coin: sdk.NewCoin(denomBTC, sdk.NewIntWithDecimal(100, 6)), Address: sender.String()},
+		types.Output{Coin: sdk.NewCoin(denomStandard, sdk.NewIntWithDecimal(50, 6)), Address: sender.String()},
+		time.Now().Add(1*time.Minute).Unix(),
+		true,
+	)
+	// failed swap buy order because of exceeded maximum swap amount
 	err := suite.app.CoinswapKeeper.Swap(suite.ctx, msg)
+	suite.Error(err)
+
+	// swap buy order msg
+	msg = types.NewMsgSwapOrder(
+		types.Input{Coin: sdk.NewCoin(denomBTC, sdk.NewIntWithDecimal(10, 6)), Address: sender.String()},
+		types.Output{Coin: sdk.NewCoin(denomStandard, sdk.NewIntWithDecimal(5, 6)), Address: sender.String()},
+		time.Now().Add(1*time.Minute).Unix(),
+		true,
+	)
+	// first successful swap buy order
+	err = suite.app.CoinswapKeeper.Swap(suite.ctx, msg)
 	suite.NoError(err)
 	reservePoolBalances := suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddr)
 	senderBalances := suite.app.BankKeeper.GetAllBalances(suite.ctx, sender)
 
 	expCoins := sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 10526315790),
-		sdk.NewInt64Coin(denomStandard, 9500000000),
+		sdk.NewInt64Coin(denomBTC, 10005002502),
+		sdk.NewInt64Coin(denomStandard, 9995000000),
 	)
 	suite.Equal(expCoins.Sort().String(), reservePoolBalances.Sort().String())
 
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 19473684210),
-		sdk.NewInt64Coin(denomStandard, 20500000000),
+		sdk.NewInt64Coin(denomBTC, 19994997498),
+		sdk.NewInt64Coin(denomStandard, 20005000000),
 		sdk.NewInt64Coin(lptDenom, 10000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), senderBalances.Sort().String())
@@ -117,46 +127,61 @@ func (suite *TestSuite) TestSwap() {
 	senderBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, sender)
 
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 11111111112),
-		sdk.NewInt64Coin(denomStandard, 9000000000),
+		sdk.NewInt64Coin(denomBTC, 10010010011),
+		sdk.NewInt64Coin(denomStandard, 9990000000),
 	)
 	suite.Equal(expCoins.Sort().String(), reservePoolBalances.Sort().String())
 
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 18888888888),
-		sdk.NewInt64Coin(denomStandard, 21000000000),
+		sdk.NewInt64Coin(denomBTC, 19989989989),
+		sdk.NewInt64Coin(denomStandard, 20010000000),
 		sdk.NewInt64Coin(lptDenom, 10000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), senderBalances.Sort().String())
 
 	reservePoolBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddr)
+
 	// swap sell order msg
 	msg = types.NewMsgSwapOrder(
-		types.Input{Coin: sdk.NewCoin(denomStandard, sdk.NewIntWithDecimal(500, 6)), Address: sender.String()},
-		types.Output{Coin: sdk.NewCoin(denomBTC, sdk.NewIntWithDecimal(500, 6)), Address: sender.String()},
+		types.Input{Coin: sdk.NewCoin(denomStandard, sdk.NewIntWithDecimal(100, 6)), Address: sender.String()},
+		types.Output{Coin: sdk.NewCoin(denomBTC, sdk.NewIntWithDecimal(100, 6)), Address: sender.String()},
 		time.Now().Add(1*time.Minute).Unix(),
 		false,
 	)
 
 	// first swap sell order
+	// failed because of exceed the maximum swap amount
+	err = suite.app.CoinswapKeeper.Swap(suite.ctx, msg)
+	suite.Error(err)
+
+	// swap sell order msg
+	msg = types.NewMsgSwapOrder(
+		types.Input{Coin: sdk.NewCoin(denomStandard, sdk.NewIntWithDecimal(5, 6)), Address: sender.String()},
+		types.Output{Coin: sdk.NewCoin(denomBTC, sdk.NewIntWithDecimal(5, 6)), Address: sender.String()},
+		time.Now().Add(1*time.Minute).Unix(),
+		false,
+	)
+
+	// first successful swap sell order
 	err = suite.app.CoinswapKeeper.Swap(suite.ctx, msg)
 	suite.NoError(err)
+
 	reservePoolBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddr)
 	senderBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, sender)
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 10526315791),
-		sdk.NewInt64Coin(denomStandard, 9500000000),
+		sdk.NewInt64Coin(denomBTC, 10005002503),
+		sdk.NewInt64Coin(denomStandard, 9995000000),
 	)
 	suite.Equal(expCoins.Sort().String(), reservePoolBalances.Sort().String())
 
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 19473684209),
-		sdk.NewInt64Coin(denomStandard, 20500000000),
+		sdk.NewInt64Coin(denomBTC, 19994997497),
+		sdk.NewInt64Coin(denomStandard, 20005000000),
 		sdk.NewInt64Coin(lptDenom, 10000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), senderBalances.Sort().String())
 
-	// second swap sell order
+	// second successful swap sell order
 	err = suite.app.CoinswapKeeper.Swap(suite.ctx, msg)
 	suite.NoError(err)
 	reservePoolBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, reservePoolAddr)
@@ -174,17 +199,16 @@ func (suite *TestSuite) TestSwap() {
 		sdk.NewInt64Coin(lptDenom, 10000000000),
 	)
 	suite.Equal(expCoins.Sort().String(), senderBalances.Sort().String())
-
 }
 
 func createReservePool(suite *TestSuite, denom string) (sdk.AccAddress, sdk.AccAddress) {
 	// Set parameters
 	params := types.Params{
 		Fee:                    sdk.NewDec(0),
-		PoolCreationFee:        sdk.Coin{sdk.DefaultBondDenom, sdk.ZeroInt()},
+		PoolCreationFee:        sdk.Coin{denomStandard, sdk.ZeroInt()},
 		TaxRate:                sdk.NewDec(0),
 		MaxStandardCoinPerPool: sdk.NewInt(10_000_000_000),
-		WhitelistedDenoms:      []string{denom},
+		MaxSwapAmount:          sdk.NewCoins(sdk.NewInt64Coin(denomBTC, 10_000_000)),
 	}
 	suite.app.CoinswapKeeper.SetParams(suite.ctx, params)
 

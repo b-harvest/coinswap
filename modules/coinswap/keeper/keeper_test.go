@@ -20,7 +20,8 @@ import (
 )
 
 const (
-	denomStandard = sdk.DefaultBondDenom
+	//denomStandard = sdk.DefaultBondDenom
+	denomStandard = "acanto"
 	denomBTC      = "btc"
 	denomETH      = "eth"
 )
@@ -74,7 +75,11 @@ func (suite *TestSuite) TestParams() {
 				PoolCreationFee:        sdk.Coin{sdk.DefaultBondDenom, sdk.ZeroInt()},
 				TaxRate:                sdk.NewDec(0),
 				MaxStandardCoinPerPool: sdk.NewInt(10_000_000_000),
-				WhitelistedDenoms:      []string{"test", "stake"},
+				MaxSwapAmount: sdk.NewCoins(
+					sdk.NewInt64Coin("usdc", 10_000_000),
+					sdk.NewInt64Coin("usdt", 10_000_000),
+					sdk.NewInt64Coin("eth", 100_000),
+				),
 			},
 		},
 	}
@@ -126,7 +131,7 @@ func (suite *TestSuite) TestLiquidity() {
 		PoolCreationFee:        sdk.Coin{sdk.DefaultBondDenom, sdk.ZeroInt()},
 		TaxRate:                sdk.NewDec(0),
 		MaxStandardCoinPerPool: sdk.NewInt(10_000_000_000),
-		WhitelistedDenoms:      []string{"btc"},
+		MaxSwapAmount:          sdk.NewCoins(sdk.NewInt64Coin(denomBTC, 10_000_000)),
 	}
 	suite.app.CoinswapKeeper.SetParams(suite.ctx, params)
 
@@ -302,7 +307,7 @@ func (suite *TestSuite) TestLiquidity() {
 	// Test add liquidity (pool exists but empty)
 	// Deposit: 200btc, 8000000000stake
 	// Pool created and mint 8000000000lpt-1
-	// Expected pool balance: 100btc, 8000000000stake
+	// Expected pool balance: 200btc, 8000000000stake
 	standardAmt, _ = sdk.NewIntFromString("8000000000")
 	msg = types.NewMsgAddLiquidity(depositCoin, standardAmt, minReward, deadline.Unix(), addrSender1.String())
 	_, err = suite.app.CoinswapKeeper.AddLiquidity(suite.ctx, msg)
@@ -322,7 +327,7 @@ func (suite *TestSuite) TestLiquidity() {
 	suite.Equal("8000000000", suite.app.BankKeeper.GetSupply(suite.ctx, lptDenom).Amount.String())
 
 	expCoins = sdk.NewCoins(
-		sdk.NewInt64Coin(denomBTC, 100),
+		sdk.NewInt64Coin(denomBTC, 200),
 		sdk.NewCoin(denomStandard, sdk.NewIntWithDecimal(8000, 6)),
 	)
 	suite.Equal(expCoins.Sort().String(), reservePoolBalances.Sort().String())

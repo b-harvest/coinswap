@@ -16,23 +16,27 @@ var (
 	KeyTaxRate                = []byte("TaxRate")                // fee key
 	KeyStandardDenom          = []byte("StandardDenom")          // standard token denom key
 	KeyMaxStandardCoinPerPool = []byte("MaxStandardCoinPerPool") // max standard coin amount per pool
-	KeyWhitelistedDenoms      = []byte("WhitelistedDenoms")      // whitelisted denoms
+	KeyMaxSwapAmount          = []byte("MaxSwapAmount")          // whitelisted denoms
 
 	DefaultFee                    = sdk.NewDecWithPrec(0, 0)
 	DefaultPoolCreationFee        = sdk.NewInt64Coin(sdk.DefaultBondDenom, 0)
 	DefaultTaxRate                = sdk.NewDecWithPrec(0, 1)
 	DefaultMaxStandardCoinPerPool = sdk.NewInt(10_000_000_000)
-	DefaultWhitelistedDenoms      = []string{}
+	DefaultMaxSwapAmount          = sdk.NewCoins(
+		sdk.NewInt64Coin("usdc", 10_000_000),
+		sdk.NewInt64Coin("usdt", 10_000_000),
+		sdk.NewInt64Coin("eth", 100_000),
+	)
 )
 
 // NewParams is the coinswap params constructor
-func NewParams(fee, taxRate sdk.Dec, poolCreationFee sdk.Coin, maxStandardCoinPerPool sdk.Int, whitelistedDenoms []string) Params {
+func NewParams(fee, taxRate sdk.Dec, poolCreationFee sdk.Coin, maxStandardCoinPerPool sdk.Int, maxSwapAmount sdk.Coins) Params {
 	return Params{
 		Fee:                    fee,
 		TaxRate:                taxRate,
 		PoolCreationFee:        poolCreationFee,
 		MaxStandardCoinPerPool: maxStandardCoinPerPool,
-		WhitelistedDenoms:      whitelistedDenoms,
+		MaxSwapAmount:          maxSwapAmount,
 	}
 }
 
@@ -48,7 +52,7 @@ func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
 		paramtypes.NewParamSetPair(KeyPoolCreationFee, &p.PoolCreationFee, validatePoolCreationFee),
 		paramtypes.NewParamSetPair(KeyTaxRate, &p.TaxRate, validateTaxRate),
 		paramtypes.NewParamSetPair(KeyMaxStandardCoinPerPool, &p.MaxStandardCoinPerPool, validateMaxStandardCoinPerPool),
-		paramtypes.NewParamSetPair(KeyWhitelistedDenoms, &p.WhitelistedDenoms, validateWhitelistedDeoms),
+		paramtypes.NewParamSetPair(KeyMaxSwapAmount, &p.MaxSwapAmount, validateMaxSwapAmount),
 	}
 }
 
@@ -59,7 +63,7 @@ func DefaultParams() Params {
 		PoolCreationFee:        DefaultPoolCreationFee,
 		TaxRate:                DefaultTaxRate,
 		MaxStandardCoinPerPool: DefaultMaxStandardCoinPerPool,
-		WhitelistedDenoms:      DefaultWhitelistedDenoms,
+		MaxSwapAmount:          DefaultMaxSwapAmount,
 	}
 }
 
@@ -126,16 +130,22 @@ func validateMaxStandardCoinPerPool(i interface{}) error {
 	return nil
 }
 
-func validateWhitelistedDeoms(i interface{}) error {
-	v, ok := i.([]string)
+func validateMaxSwapAmount(i interface{}) error {
+	v, ok := i.(sdk.Coins)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
 
-	for _, denom := range v {
-		if err := sdk.ValidateDenom(denom); err != nil {
+	for _, coin := range v {
+		// do something with the coin object, such as print its denomination and amount
+		if err := sdk.ValidateDenom(coin.Denom); err != nil {
 			return err
 		}
+
+		if coin.Amount.LT(sdk.ZeroInt()) {
+			return fmt.Errorf("coin amount must be positive")
+		}
 	}
+
 	return nil
 }

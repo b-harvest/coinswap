@@ -109,13 +109,13 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity) (sdk.C
 	}
 
 	params := k.GetParams(ctx)
-	whitelistedDenoms := params.WhitelistedDenoms
+	whitelistedDenoms := params.MaxSwapAmount
 
 	// check if a denom exists in the whitelist
 	search := msg.MaxToken.Denom
 	found := false
-	for _, v := range whitelistedDenoms {
-		if v == search {
+	for _, coin := range whitelistedDenoms {
+		if coin.Denom == search {
 			found = true
 			break
 		}
