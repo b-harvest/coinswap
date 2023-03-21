@@ -274,7 +274,6 @@ func (suite *TestSuite) TestLiquidity() {
 	suite.Error(err)
 
 	// Test remove liquidity (remove all)
-	// Expected behavior: fails to withdraw
 	// Expected pool coin supply: 0
 	// Expected reserve balance: 0btc, 0stake
 	withdraw = sdk.NewIntWithDecimal(2000, 6)
@@ -300,4 +299,31 @@ func (suite *TestSuite) TestLiquidity() {
 	suite.Equal(expCoins.Sort().String(), sender2Balances.Sort().String())
 	suite.Equal("", reservePoolBalances.String())
 
+	// Test add liquidity (pool exists but empty)
+	// Deposit: 200btc, 8000000000stake
+	// Pool created and mint 8000000000lpt-1
+	// Expected pool balance: 100btc, 8000000000stake
+	standardAmt, _ = sdk.NewIntFromString("8000000000")
+	msg = types.NewMsgAddLiquidity(depositCoin, standardAmt, minReward, deadline.Unix(), addrSender1.String())
+	_, err = suite.app.CoinswapKeeper.AddLiquidity(suite.ctx, msg)
+	suite.NoError(err)
+
+	poolId = types.GetPoolId(denomBTC)
+	pool, has = suite.app.CoinswapKeeper.GetPool(suite.ctx, poolId)
+	suite.Require().True(has)
+
+	poolAddr, err = sdk.AccAddressFromBech32(pool.EscrowAddress)
+	suite.Require().NoError(err)
+
+	lptDenom = pool.LptDenom
+
+	reservePoolBalances = suite.app.BankKeeper.GetAllBalances(suite.ctx, poolAddr)
+	sender1Balances = suite.app.BankKeeper.GetAllBalances(suite.ctx, addrSender1)
+	suite.Equal("8000000000", suite.app.BankKeeper.GetSupply(suite.ctx, lptDenom).Amount.String())
+
+	expCoins = sdk.NewCoins(
+		sdk.NewInt64Coin(denomBTC, 100),
+		sdk.NewCoin(denomStandard, sdk.NewIntWithDecimal(8000, 6)),
+	)
+	suite.Equal(expCoins.Sort().String(), reservePoolBalances.Sort().String())
 }

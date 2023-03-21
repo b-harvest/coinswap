@@ -167,20 +167,38 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity) (sdk.C
 		tokenReserveAmt := balances.AmountOf(msg.MaxToken.Denom)
 		liquidity := k.bk.GetSupply(ctx, pool.LptDenom).Amount
 
-		if standardReserveAmt.GTE(params.MaxStandardCoinPerPool) {
-			return sdk.Coin{}, sdkerrors.Wrap(types.ErrMaxedStandardDenom, fmt.Sprintf("pool standard coin is maxed out: %s", params.MaxStandardCoinPerPool.String()))
-		}
+		if liquidity.Equal(sdk.ZeroInt()) {
+			// pool exists, but it is empty
+			// same with initial liquidity provide
+			mintLiquidityAmt = msg.ExactStandardAmt
 
-		maxStandardInputAmt := sdk.MinInt(msg.ExactStandardAmt, params.MaxStandardCoinPerPool.Sub(standardReserveAmt))
-		mintLiquidityAmt = (liquidity.Mul(maxStandardInputAmt)).Quo(standardReserveAmt)
-		if mintLiquidityAmt.LT(msg.MinLiquidity) {
-			return sdk.Coin{}, sdkerrors.Wrap(types.ErrConstraintNotMet, fmt.Sprintf("liquidity amount not met, user expected: no less than %s, actual: %s", msg.MinLiquidity.String(), mintLiquidityAmt.String()))
-		}
-		depositAmt := (tokenReserveAmt.Mul(maxStandardInputAmt)).Quo(standardReserveAmt).AddRaw(1)
-		depositToken = sdk.NewCoin(msg.MaxToken.Denom, depositAmt)
-		standardCoin = sdk.NewCoin(standardDenom, maxStandardInputAmt)
-		if depositAmt.GT(msg.MaxToken.Amount) {
-			return sdk.Coin{}, sdkerrors.Wrap(types.ErrConstraintNotMet, fmt.Sprintf("token amount not met, user expected: no more than %s, actual: %s", msg.MaxToken.String(), depositToken.String()))
+			if mintLiquidityAmt.GT(params.MaxStandardCoinPerPool) {
+				return sdk.Coin{}, sdkerrors.Wrap(types.ErrMaxedStandardDenom, fmt.Sprintf("liquidity amount not met, max standard coin amount: no bigger than %s, actual: %s", params.MaxStandardCoinPerPool.String(), mintLiquidityAmt.String()))
+			}
+
+			if mintLiquidityAmt.LT(msg.MinLiquidity) {
+				return sdk.Coin{}, sdkerrors.Wrap(types.ErrConstraintNotMet, fmt.Sprintf("liquidity amount not met, user expected: no less than %s, actual: %s", msg.MinLiquidity.String(), mintLiquidityAmt.String()))
+			}
+
+			depositToken = sdk.NewCoin(msg.MaxToken.Denom, msg.MaxToken.Amount)
+
+		} else {
+			if standardReserveAmt.GTE(params.MaxStandardCoinPerPool) {
+				return sdk.Coin{}, sdkerrors.Wrap(types.ErrMaxedStandardDenom, fmt.Sprintf("pool standard coin is maxed out: %s", params.MaxStandardCoinPerPool.String()))
+			}
+
+			maxStandardInputAmt := sdk.MinInt(msg.ExactStandardAmt, params.MaxStandardCoinPerPool.Sub(standardReserveAmt))
+			mintLiquidityAmt = (liquidity.Mul(maxStandardInputAmt)).Quo(standardReserveAmt)
+			if mintLiquidityAmt.LT(msg.MinLiquidity) {
+				return sdk.Coin{}, sdkerrors.Wrap(types.ErrConstraintNotMet, fmt.Sprintf("liquidity amount not met, user expected: no less than %s, actual: %s", msg.MinLiquidity.String(), mintLiquidityAmt.String()))
+			}
+
+			depositAmt := (tokenReserveAmt.Mul(maxStandardInputAmt)).Quo(standardReserveAmt).AddRaw(1)
+			depositToken = sdk.NewCoin(msg.MaxToken.Denom, depositAmt)
+			standardCoin = sdk.NewCoin(standardDenom, maxStandardInputAmt)
+			if depositAmt.GT(msg.MaxToken.Amount) {
+				return sdk.Coin{}, sdkerrors.Wrap(types.ErrConstraintNotMet, fmt.Sprintf("token amount not met, user expected: no more than %s, actual: %s", msg.MaxToken.String(), depositToken.String()))
+			}
 		}
 	}
 
