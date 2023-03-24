@@ -21,11 +21,11 @@ var (
 	DefaultFee                    = sdk.NewDecWithPrec(0, 0)
 	DefaultPoolCreationFee        = sdk.NewInt64Coin(sdk.DefaultBondDenom, 0)
 	DefaultTaxRate                = sdk.NewDecWithPrec(0, 1)
-	DefaultMaxStandardCoinPerPool = sdk.NewInt(10_000_000_000)
+	DefaultMaxStandardCoinPerPool = sdk.NewIntWithDecimal(10000, 18)
 	DefaultMaxSwapAmount          = sdk.NewCoins(
-		sdk.NewInt64Coin("usdc", 10_000_000),
-		sdk.NewInt64Coin("usdt", 10_000_000),
-		sdk.NewInt64Coin("eth", 100_000),
+		sdk.NewCoin("ibc/17CD484EE7D9723B847D95015FA3EBD1572FD13BC84FB838F55B18A57450F25B", sdk.NewIntWithDecimal(10, 6)), // uUSDC
+		sdk.NewCoin("ibc/4F6A2DEFEA52CD8D90966ADCB2BD0593D3993AB0DF7F6AEB3EFD6167D79237B0", sdk.NewIntWithDecimal(10, 6)), // uUSDT                                                          //uUSDT
+		sdk.NewCoin("ibc/DC186CA7A8C009B43774EBDC825C935CABA9743504CE6037507E6E5CCE12858A", sdk.NewIntWithDecimal(1, 17)), // wei (0.1 ETH)
 	)
 )
 
