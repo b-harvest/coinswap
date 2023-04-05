@@ -112,15 +112,7 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity) (sdk.C
 	whitelistedDenoms := params.MaxSwapAmount
 
 	// check if a denom exists in the whitelist
-	search := msg.MaxToken.Denom
-	found := false
-	for _, coin := range whitelistedDenoms {
-		if coin.Denom == search {
-			found = true
-			break
-		}
-	}
-	if !found {
+	if !whitelistedDenoms.AmountOf(msg.MaxToken.Denom).IsPositive() {
 		return sdk.Coin{}, sdkerrors.Wrapf(types.ErrInvalidDenom,
 			"MaxToken: %s is not in the whitelisted denoms", msg.MaxToken.String())
 	}
