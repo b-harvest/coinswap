@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"fmt"
+	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -204,6 +205,18 @@ func (k Keeper) TradeInputForExactOutput(ctx sdk.Context, input types.Input, out
 	if err := k.swapCoins(ctx, inputAddress, outputAddress, soldToken, output.Coin); err != nil {
 		return sdk.ZeroInt(), err
 	}
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeSwap,
+			sdk.NewAttribute(types.AttributeValueAmount, soldTokenAmt.String()),
+			sdk.NewAttribute(types.AttributeValueSender, input.Address),
+			sdk.NewAttribute(types.AttributeValueRecipient, output.Address),
+			sdk.NewAttribute(types.AttributeValueIsBuyOrder, strconv.FormatBool(true)),
+			sdk.NewAttribute(types.AttributeValueTokenPair, types.GetTokenPairByDenom(input.Coin.Denom, output.Coin.Denom)),
+		),
+	)
+
 	return soldTokenAmt, nil
 }
 
