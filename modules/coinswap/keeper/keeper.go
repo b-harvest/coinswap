@@ -109,12 +109,11 @@ func (k Keeper) AddLiquidity(ctx sdk.Context, msg *types.MsgAddLiquidity) (sdk.C
 	}
 
 	params := k.GetParams(ctx)
-	whitelistedDenoms := params.MaxSwapAmount
 
-	// check if a denom exists in the whitelist
-	if !whitelistedDenoms.AmountOf(msg.MaxToken.Denom).IsPositive() {
+	// check if a denom exists in the max swap amount params
+	if !params.MaxSwapAmount.AmountOf(msg.MaxToken.Denom).IsPositive() {
 		return sdk.Coin{}, sdkerrors.Wrapf(types.ErrInvalidDenom,
-			"MaxToken: %s is not in the whitelisted denoms", msg.MaxToken.String())
+			"MaxToken %s is not registered in max swap amount", msg.MaxToken.Denom)
 	}
 
 	var mintLiquidityAmt sdk.Int

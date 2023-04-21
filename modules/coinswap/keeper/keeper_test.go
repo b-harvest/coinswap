@@ -20,8 +20,7 @@ import (
 )
 
 const (
-	//denomStandard = sdk.DefaultBondDenom
-	denomStandard = "acanto"
+	denomStandard = sdk.DefaultBondDenom
 	denomBTC      = "btc"
 	denomETH      = "eth"
 )
